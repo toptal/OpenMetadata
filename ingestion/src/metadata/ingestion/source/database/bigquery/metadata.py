@@ -391,7 +391,7 @@ class BigquerySource(
     def get_table_obj(self, table_name: str):
         schema_name = self.context.database_schema
         database = self.context.database
-        bq_table_fqn = fqn._build(database, schema_name, table_name)
+        bq_table_fqn = fqn._build(database, schema_name, table_name, quote=False)
         return self.client.get_table(bq_table_fqn)
 
     def yield_table_tags(self, table_name_and_type: Tuple[str, str]):
@@ -486,7 +486,10 @@ class BigquerySource(
         if table_type == TableType.View:
             try:
                 view_definition = inspector.get_view_definition(
-                    fqn._build(self.context.database, schema_name, table_name)
+                    fqn._build(
+                        self.context.database, schema_name, table_name,
+                        quote=False
+                    )
                 )
                 view_definition = (
                     "" if view_definition is None else str(view_definition)
@@ -504,7 +507,7 @@ class BigquerySource(
         check if the table is partitioned table and return the partition details
         """
         database = self.context.database
-        table = self.client.get_table(fqn._build(database, schema_name, table_name))
+        table = self.client.get_table(fqn._build(database, schema_name, table_name, quote=False))
         if table.time_partitioning is not None:
             if table.time_partitioning.field:
                 table_partition = TablePartition(
